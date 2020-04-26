@@ -2,21 +2,21 @@
 using System.Threading;
 using System.Collections.Generic;
 using System;
-using System.Configuration;
+using OpenQA.Selenium;
 
 namespace TradesBumper
 {
     class Program
     {
         static void Main(string[] args)
-        {            
+        {  
             var name = GetUserDetails(SettingTypes.Name);
 
             var emailAddress = GetUserDetails(SettingTypes.EmailAddress);
 
             var password = GetUserDetails(SettingTypes.Password);
 
-            Console.WriteLine($"Continue with the following details? \nName: {name}\nEmail Address: {emailAddress}\nPassword: {password}\ny/n");
+            /*Console.WriteLine($"Continue with the following details? \nName: {name}\nEmail Address: {emailAddress}\nPassword: {password}\ny/n");
             var confirmation = Console.ReadLine();
             if (confirmation != "y")
             {
@@ -33,10 +33,13 @@ namespace TradesBumper
                 }
 
                 Environment.Exit(0);
-            }
+            }*/
             
             ChromeOptions options = new ChromeOptions();
             options.AddUserProfilePreference("profile.default_content_setting_values.images", 2);
+            options.PageLoadStrategy = PageLoadStrategy.None;
+            options.AddArgument("start-maximized");
+            //options.AddArgument("--headless");
 
             var driver = new ChromeDriver(options)
             {
@@ -47,12 +50,16 @@ namespace TradesBumper
 
             try
             {
+                Thread.Sleep(4000);
                 driver.FindElementById("acceptPrivacyPolicy").Click();
 
+                Thread.Sleep(2000);
                 driver.FindElementById("header-email").SendKeys(emailAddress);
                 driver.FindElementById("header-password").SendKeys(password);
-                driver.FindElementByClassName("rlg-btn-primary").Click();
+                driver.FindElementById("header-password").SendKeys(Keys.Enter);
+                //driver.FindElementByClassName("rlg-btn-primary").Click();
 
+                Thread.Sleep(5000);
                 var editLinks = driver.FindElementsByXPath("//a[contains(text(),'Edit trade')]");
 
                 var editUrls = new List<string>();
@@ -64,6 +71,7 @@ namespace TradesBumper
                 foreach (var url in editUrls)
                 {
                     driver.Url = url;
+                    Thread.Sleep(5000);
                     driver.FindElementByCssSelector(".rlg-btn-trade-form.g-recaptcha.rlg-btn-primary.prevent").Click();
                     Thread.Sleep(15000);
                 }
